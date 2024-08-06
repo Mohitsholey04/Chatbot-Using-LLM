@@ -1,0 +1,64 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <title>PDF Summary and QA</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+  </head>
+  <body>
+    <div class="container">
+      <div class="header">
+        <h1>PDF Summary and Question Answering</h1>
+        <p>Upload a PDF file to get a summary and ask questions about its content.</p>
+      </div>
+      <div class="form-container">
+        <form id="uploadForm" enctype="multipart/form-data">
+          <label for="file" class="form-label">Select PDF File:</label>
+          <input type="file" id="file" name="file" class="form-input" required>
+          <button type="submit" class="form-button">Upload and Summarize</button>
+        </form>
+        <div id="summary" class="output"></div>
+        <form id="qaForm">
+          <label for="question" class="form-label">Ask a Question:</label>
+          <input type="text" id="question" placeholder="Enter your question here..." class="form-input" required>
+          <button type="submit" class="form-button">Get Answer</button>
+        </form>
+        <div id="answer" class="output"></div>
+      </div>
+    </div>
+
+    <script>
+      document.getElementById('uploadForm').onsubmit = async (e) => {
+        e.preventDefault();
+        const file = document.getElementById('file').files[0];
+        const formData = new FormData();
+        formData.append('file', file);
+
+        const response = await fetch('/upload', {
+          method: 'POST',
+          body: formData
+        });
+
+        const result = await response.json();
+        document.getElementById('summary').innerText = result.summary;
+      };
+
+      document.getElementById('qaForm').onsubmit = async (e) => {
+        e.preventDefault();
+        const question = document.getElementById('question').value;
+        const pdf_path = document.getElementById('file').files[0].name;
+
+        const response = await fetch('/answer', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({ pdf_path, question })
+        });
+
+        const result = await response.json();
+        document.getElementById('answer').innerText = result.answer;
+      };
+    </script>
+  </body>
+</html>
